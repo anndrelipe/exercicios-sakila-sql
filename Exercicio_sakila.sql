@@ -101,24 +101,103 @@ select
 
 # 10) EXIBIR O NOME DO CLIENTE QUE MAIS DEU LUCRO EM CADA LOJA
 
+select * from (
 select 
 	concat(c.first_name, ' ' ,c.last_name) nome , sum(amount) valor_gasto, c.store_id loja
 	from customer c 
 	inner join payment p
 		on p.customer_id = c.customer_id
+	where c.store_id = 1
 	group by c.customer_id
 	order by valor_gasto desc
-	limit 2;
-
+	limit 1) as subq1
+union
+select * from (select 
+	concat(c.first_name, ' ' ,c.last_name) nome , sum(amount) valor_gasto, c.store_id loja
+	from customer c 
+	inner join payment p
+		on p.customer_id = c.customer_id
+	where c.store_id = 2
+	group by c.customer_id
+	order by valor_gasto desc
+	limit 1
+)as subq2;
 
 
 # 11) EXIBIR O CLIENTE E O VALOR GASTO POR CADA UM DELES
+
+select 
+	concat(c.first_name, ' ' ,c.last_name) nome , sum(amount) valor_gasto
+	from customer c 
+	inner join payment p
+		on p.customer_id = c.customer_id
+	group by c.customer_id
+	order by valor_gasto desc;
+
 # 12) EXIBIR O FILME E A QUANTIDADE DE VEZES QUE ELE FOI ALUGADO
+	
+select
+	f.title, count(*) 
+	from rental r 
+		inner join inventory i 
+			on i.inventory_id = r.inventory_id 
+		inner join film f 
+			on f.film_id = i.film_id 
+	group by f.film_id;
+			
 # 13) EXIBIR O FILME E O VALOR QUE CADA UM ARRECADOU COM A LOCAÇÃO
+
+select 
+	f.title, sum(p.amount) total_rental_amount
+	from payment p 
+		inner join rental r 
+			on p.rental_id = r.rental_id 
+		inner join inventory i 
+			on r.inventory_id = i.inventory_id 
+		inner join film f 
+			on i.film_id = f.film_id 
+	group by f.film_id;
+			
+	
 # 14) EXIBIR O ID DA LOJA E A QUANTIDADE DE FILMES POR LOJA
+
+select 
+	i.store_id , count(*)
+	from inventory i 
+	group by i.store_id; 
+
 # 15) EXIBIR TODOS OS FILMES QUE AINDA NÃO FORAM DEVOLVIDOS
+
+select 
+	f.title, r.rental_date, i.inventory_id, r.return_date
+	from rental r 
+		inner join inventory i 
+			on i.inventory_id = r.inventory_id 
+		inner join film f 
+			on i.film_id = f.film_id 
+	where r.return_date is null;
+			
 # 16) EXIBIR O DIA E O VALOR RECEBIDO POR DIA
+
+select 
+	date(p.payment_date), sum(amount)
+	from payment p
+	group by date(p.payment_date)
+	
+	
 # 17) EXIBIR O VALOR RECEBIDO POR DIA EM CADA LOJA
+	
+select 
+	i.store_id, date(p.payment_date), sum(amount)
+	from payment p 
+		inner join rental r 
+			on p.rental_id = r.rental_id 
+		inner join inventory i 
+			on r.inventory_id = i.inventory_id 
+		group by i.store_id, date(p.payment_date)
+		order by date(p.payment_date);
+
+	
 # 18) EXIBIR O CLIENTE E A QUANTIDADE DE FILMES QUE ELE ALUGOU
 # 19) EXIBIR O FILME, O ID DO INVENTÁRIO E QUANTIDADE DE VEZES QUE ELE FOI ALUGADO EM CADA LOJA
 # 20) EXIBIR A QUANTIDADE DE FILMES ALUGADOS POR DIA EM CADA LOJA
