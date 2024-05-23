@@ -199,13 +199,95 @@ select
 
 	
 # 18) EXIBIR O CLIENTE E A QUANTIDADE DE FILMES QUE ELE ALUGOU
+	
+select 
+	concat(c.first_name, ' ', c.last_name) nome, count(*) qtd_alugada
+	from customer c 
+		inner join rental r 
+			on c.customer_id = r.customer_id 
+	group by c.customer_id;
+	
 # 19) EXIBIR O FILME, O ID DO INVENTÁRIO E QUANTIDADE DE VEZES QUE ELE FOI ALUGADO EM CADA LOJA
+	
+select * from (select 
+	f.title nome, group_concat(i.inventory_id) inventarios, count(*) qtd
+	from rental r  
+		inner join inventory i  
+			on i.inventory_id = r.rental_id 
+		inner join film f 
+			on i.film_id = f.film_id 
+	where i.store_id = 1
+	group by f.film_id ) subq1
+union 
+select * from (select 
+	f.title nome, group_concat(i.inventory_id) inventarios, count(*) qtd
+	from rental r  
+		inner join inventory i  
+			on i.inventory_id = r.rental_id 
+		inner join film f 
+			on i.film_id = f.film_id 
+	where i.store_id = 2
+	group by f.film_id ) subq2;
+	
 # 20) EXIBIR A QUANTIDADE DE FILMES ALUGADOS POR DIA EM CADA LOJA
+
+select * from (select 
+	i.store_id loja, date(r.rental_date) dia, count(*) qtd_alugada
+	from rental r
+		inner join inventory i 
+			on i.inventory_id = r.inventory_id 
+	where i.store_id = 1
+	group by date(r.rental_date)) subq1
+union 
+select * from (select 
+	i.store_id loja, date(r.rental_date) dia, count(*) qtd_alugada
+	from rental r
+		inner join inventory i 
+			on i.inventory_id = r.inventory_id 
+	where i.store_id = 2
+	group by date(r.rental_date)) subq2
+
 # 21) EXIBIR A QUANTIDADE DE FILMES DEVOLVIDOS POR DIA EM CADA LOJA
+
+select * from (select 
+	i.store_id loja, date(r.return_date) dia, count(*) qtd_devolvida
+	from rental r
+		inner join inventory i 
+			on i.inventory_id = r.inventory_id 
+	where i.store_id = 1
+	group by date(r.return_date)) subq1
+union 
+select * from (select 
+	i.store_id loja, date(r.return_date) dia, count(*) qtd_devolvida
+	from rental r
+		inner join inventory i 
+			on i.inventory_id = r.inventory_id 
+	where i.store_id = 2
+	group by date(r.return_date)) subq2
+	
 # 22) EXIBIR A DATA E A QUANTIDADE DE FILMES ALUGADOS NAS SEXTAS-FEIRAS
+	
+	
 # 23) EXIBIR O VALOR QUE DEVE SER RECEBIDO COM OS FILMES QUE AINDA NÃO FORA DEVOLVIDOS
-# 24) EXIBIR O ID DA LOCAÇÃO, A DATA DE RETIRADA, A DATA DE DEVOLUÇÃO E A QUANTIDADE DE DIAS QUE OS FILMES FICARAM COM O CLIENTE
+	
+select
+	sum(f.rental_rate)
+	from film f 
+		inner join inventory i 
+			on i.film_id = f.film_id 
+		inner join rental r 
+			on i.inventory_id = r.inventory_id 
+	where r.return_date is null
+	
+# 24) EXIBIR O ID DA LOCAÇÃO, A DATA DE RETIRADA, A DATA DE DEVOLUÇÃO E A QUANTIDADE DE DIAS 
+# QUE OS FILMES FICARAM COM O CLIENTE
+	
+	
+	
 # 25) EXIBIR O DIA E O VALOR COM O MAIOR LUCRO
+	
+	
+	
 # 26) EXIBIR ORDENADAMENTE OS 5 ATORES COM A MAIOR QUANTIDADE DE PARTICIPAÇÕES EM FILMES
 # 27) EXIBIR O FILME, O ID NO INVENTÁRIO E O VALOR QUE CADA UNIDADE GEROU DE LUCRO
 # 28) EXIBIR O RANKING COM OS 10 CLIENTES QUE MAIS GERARAM LUCRO EM CADA LOJA
