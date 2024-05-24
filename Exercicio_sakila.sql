@@ -267,6 +267,14 @@ select * from (select
 	
 # 22) EXIBIR A DATA E A QUANTIDADE DE FILMES ALUGADOS NAS SEXTAS-FEIRAS
 	
+select 
+	date(r.rental_date)	dia, count(*) qtd_devolvida
+	from rental r
+		inner join inventory i 
+			on i.inventory_id = r.inventory_id 
+	where dayofweek(r.rental_date) = 4
+	group by date(r.rental_date);
+	
 	
 # 23) EXIBIR O VALOR QUE DEVE SER RECEBIDO COM OS FILMES QUE AINDA NÃO FORA DEVOLVIDOS
 	
@@ -277,18 +285,89 @@ select
 			on i.film_id = f.film_id 
 		inner join rental r 
 			on i.inventory_id = r.inventory_id 
-	where r.return_date is null
+	where r.return_date is null;
 	
 # 24) EXIBIR O ID DA LOCAÇÃO, A DATA DE RETIRADA, A DATA DE DEVOLUÇÃO E A QUANTIDADE DE DIAS 
 # QUE OS FILMES FICARAM COM O CLIENTE
 	
-	
+select 
+	r.rental_id, r.rental_date, r.return_date, datediff(r.return_date,r.rental_date) dias
+	from rental r ;
 	
 # 25) EXIBIR O DIA E O VALOR COM O MAIOR LUCRO
 	
-	
+	select 
+	date(p.payment_date), sum(amount) lucro
+	from payment p 
+		inner join rental r 
+			on p.rental_id = r.rental_id 
+		inner join inventory i 
+			on r.inventory_id = i.inventory_id 
+		group by i.store_id, date(p.payment_date)
+		order by lucro desc
+		limit 1;
 	
 # 26) EXIBIR ORDENADAMENTE OS 5 ATORES COM A MAIOR QUANTIDADE DE PARTICIPAÇÕES EM FILMES
+	
+select 
+	concat(a.first_name, ' ', a.last_name) nome, count(*) qtd_filmes
+	from actor a 
+		inner join film_actor fa 
+			on a.actor_id = fa.actor_id 
+	group by a.actor_id
+	order by qtd_filmes desc 
+	limit 5;
+
 # 27) EXIBIR O FILME, O ID NO INVENTÁRIO E O VALOR QUE CADA UNIDADE GEROU DE LUCRO
+
+select * from
+(select 
+	f.title, group_concat(distinct i.inventory_id), sum(p.amount)
+	from film f 
+		inner join inventory i 
+			on i.film_id = f.film_id 
+		inner join rental r 
+			on r.inventory_id = i.inventory_id 
+		inner join payment p 
+			on p.rental_id = r.rental_id
+	where i.store_id = 1
+	group by f.film_id) subq1
+union
+select * from
+(select 
+	f.title, group_concat(distinct i.inventory_id), sum(p.amount)
+	from film f 
+		inner join inventory i 
+			on i.film_id = f.film_id 
+		inner join rental r 
+			on r.inventory_id = i.inventory_id 
+		inner join payment p 
+			on p.rental_id = r.rental_id
+	where i.store_id = 2
+	group by f.film_id) subq2;
+
 # 28) EXIBIR O RANKING COM OS 10 CLIENTES QUE MAIS GERARAM LUCRO EM CADA LOJA
+
+select 
+	concat(c.first_name, ' ' ,c.last_name) nome , sum(amount) valor_gasto
+	from customer c 
+	inner join payment p
+		on p.customer_id = c.customer_id
+	group by c.customer_id
+	order by valor_gasto desc
+	limit 10;
+
 # 29) EXIBIR O RANKING COM OS 10 FILMES QUE MAIS GERARAM LUCRO EM CADA LOJA
+
+select 
+	f.title, sum(p.amount) lucro
+	from film f 
+		inner join inventory i 
+			on i.film_id = f.film_id 
+		inner join rental r 
+			on r.inventory_id = i.inventory_id 
+		inner join payment p 
+			on p.rental_id = r.rental_id
+	group by f.film_id
+	order by lucro desc 
+	limit 10;
